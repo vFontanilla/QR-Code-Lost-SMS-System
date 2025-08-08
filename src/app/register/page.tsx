@@ -31,7 +31,7 @@ export default function RegisterPage() {
 
       if (response.ok) {
         alert('Registration successful!');
-        router.push('/login'); // ✅ Redirect to login
+        router.push('/'); // ✅ Redirect to login
       } else {
         alert(data?.error?.message || 'Registration failed');
       }
@@ -98,7 +98,7 @@ export default function RegisterPage() {
 
         <p className="mt-4 text-sm text-center">
           Already have an account?{' '}
-          <a href="/login" className="text-blue-600 hover:underline">
+          <a href="/" className="text-blue-600 hover:underline">
             Log In
           </a>
         </p>
