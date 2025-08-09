@@ -22,6 +22,14 @@ export interface MessagePayload {
 // Base API URL from your .env file
 const API = `${process.env.NEXT_PUBLIC_STRAPI_URL}/api`;
 
+type SubmitParams = {
+  documentId: string;          // string from URL
+  message: string;
+  sender_name?: string;
+  sender_email?: string;
+  sender_phone?: string;
+};
+
 // Fetch all items with their related fields populated
 export const fetchItems = async () => {
   const token = localStorage.getItem('token');
@@ -57,13 +65,113 @@ export const addItem = async (data: any, p0: string | undefined) => {
 //   return axios.get(`${API}/items/${documentId}?populate=*`);
 // };
 
+// Look up an item by its documentId (string)
 export const fetchItemByDocumentId = (documentId: string) => {
   console.log('fetchItemByDocumentId:', documentId);
   return axios.get(`${API}/items/${documentId}`);
 };
 
 // Submit a "found" message linked to an item
-export const submitFoundMessage = (data: MessagePayload, token?: string) =>
-  axios.post(`${API}/messages`, { data }, {
-    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+// export const submitFoundMessageByDocumentId = (data: MessagePayload) => {
+//   console.log('submitFoundMessageByDocumentId:', data);
+//   return axios.post(`${API}/messages`, { data });
+// };
+
+// Resolve documentId → numeric item.id, then POST message
+// export const submitFoundMessageByDocumentId = async ({
+//   documentId,
+//   message,
+//   sender_name,
+//   sender_email,
+//   sender_phone,
+// }: SubmitParams) => {
+//   console.log('📩 submitFoundMessageByDocumentId called with:', {
+//     documentId,
+//     message,
+//     sender_name,
+//     sender_email,
+//     sender_phone
+//   });  
+
+//   console.log(`🔍 Fetching item for documentId: ${documentId}`);
+//   const { data } = await fetchItemByDocumentId(documentId);
+//   console.log('📦 Raw item fetch response:', data);
+
+//   const item = data?.data?.[0];
+//   const itemId: number | undefined = item?.id;
+
+//   console.log(`📦 Item data from fetchItemByDocumentId:`, documentId);
+
+//   if (!documentId) {
+//     console.error('❌ No item found for documentId:', documentId);
+//     throw new Error('Item not found for the provided documentId.');
+//   }
+
+//   // Step 2: Prepare payload
+//   const payload = {
+//     data: {
+//       message,
+//       sender_name,
+//       sender_email,
+//       sender_phone
+//     },
+//   };
+//   console.log('📤 Sending POST to /messages with payload:', payload);
+
+//   // Step 3: Send to Strapi
+//   const response = await axios.post(`${API}/messages`, payload);
+//   console.log('✅ Message submission response:', response.data);
+
+//   return response;
+// };
+
+export const submitFoundMessageByDocumentId = async ({
+  documentId,
+  message,
+  sender_name,
+  sender_email,
+  sender_phone,
+}: SubmitParams) => {
+  console.log('📩 [submitFoundMessageByDocumentId] called with:', {
+    documentId,
+    message,
+    sender_name,
+    sender_email,
+    sender_phone,
   });
+
+  if (!documentId || !message.trim()) {
+    console.error('❌ [submitFoundMessageByDocumentId] Missing required fields:', {
+      documentIdPresent: !!documentId,
+      messagePresent: !!message?.trim(),
+    });
+    throw new Error('documentId and message are required.');
+  }
+
+  const url = `${API}/messages/by-document-id`;
+  console.log(`🌐 [submitFoundMessageByDocumentId] POST → ${url}`);
+
+  const payload = {
+    documentId,
+    message,
+    sender_name,
+    sender_email,
+    sender_phone,
+  };
+
+  console.log('📤 [submitFoundMessageByDocumentId] Payload:', payload);
+
+  try {
+    const res = await axios.post(url, payload);
+    console.log('✅ [submitFoundMessageByDocumentId] Response status:', res.status);
+    console.log('📦 [submitFoundMessageByDocumentId] Response data:', res.data);
+    return res.data; // { data: ... } from controller
+  } catch (err: any) {
+    console.error('❌ [submitFoundMessageByDocumentId] Request failed:', {
+      message: err.message,
+      status: err.response?.status,
+      data: err.response?.data,
+    });
+    throw err;
+  }
+};
