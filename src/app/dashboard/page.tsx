@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ComponentProps } from 'react';
 import { fetchItems } from '@/lib/api';
 import Link from 'next/link';
 import ItemList from '@/components/Itemlist';
@@ -11,11 +11,15 @@ interface User {
   email: string;
 }
 
+// Infer the exact prop type that ItemList expects
+type ItemListProps = ComponentProps<typeof ItemList>;
+type ItemForList = ItemListProps['items'][number];
+
 export default function DashboardPage() {
   useAuthRedirect(); // 👈 protect the page
 
   const [user, setUser] = useState<User | null>(null);
-  const [items, setItems] = useState<unknown[]>([]);
+  const [items, setItems] = useState<ItemForList[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,7 +33,12 @@ export default function DashboardPage() {
 
         const itemRes = await fetchItems();
         console.log(itemRes);
-        setItems(itemRes.data.data);
+
+        // If your API already returns the same shape ItemList expects:
+        setItems(itemRes.data.data as ItemForList[]);
+
+        // If your API returns Strapi's { id, attributes: {...} } and ItemList expects flattened items,
+        // map here and build ItemForList objects before calling setItems.
       } catch (err) {
         console.error(err);
         setUser(null);
@@ -70,7 +79,7 @@ export default function DashboardPage() {
         + Add New Item
       </Link>
 
-      <ItemList items={items as any[]} />
+      <ItemList items={items} />
     </div>
   );
 }
