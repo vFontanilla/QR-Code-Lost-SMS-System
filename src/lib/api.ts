@@ -43,18 +43,18 @@ export const fetchItems = async () => {
 };
 
 // Add a new item (requires auth token if protected)
-export const addItem = async (data: any, p0: string | undefined) => {
-  const token = localStorage.getItem('token');
+export const addItem = async (data: unknown, token: string | undefined) => {
+  const authToken = token ?? localStorage.getItem('token');
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   return axios.post(`${API}/items`, {
     data: {
-      ...data,
+      ...(data as object),
       user: user.id, // 👈 attach user ID to the item
     },
   }, {
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${authToken}`,
     },
   });
 };
@@ -166,12 +166,18 @@ export const submitFoundMessageByDocumentId = async ({
     console.log('✅ [submitFoundMessageByDocumentId] Response status:', res.status);
     console.log('📦 [submitFoundMessageByDocumentId] Response data:', res.data);
     return res.data; // { data: ... } from controller
-  } catch (err: any) {
-    console.error('❌ [submitFoundMessageByDocumentId] Request failed:', {
-      message: err.message,
-      status: err.response?.status,
-      data: err.response?.data,
-    });
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.error('❌ [submitFoundMessageByDocumentId] Request failed:', {
+        message: err.message,
+      });
+    } else if (typeof err === 'object' && err !== null && 'toString' in err) {
+      console.error('❌ [submitFoundMessageByDocumentId] Request failed:', {
+        message: String(err),
+      });
+    } else {
+      console.error('❌ [submitFoundMessageByDocumentId] Unknown error:', err);
+    }
     throw err;
   }
 };

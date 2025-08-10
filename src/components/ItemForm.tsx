@@ -51,16 +51,23 @@ export default function ItemForm() {
       ownerEmail: ownerEmail.trim() === '' ? null : ownerEmail,
       location,
       date: date.trim() === '' ? null : date,
-      user: user.id, // ✅ Attach user ID
+      user: user.id,
     };
 
     try {
       console.log('Token being sent:', token);
       const response = await addItem(payload, token || undefined);
       console.log('Response from API:', response.data);
-      setNewItemId(response.data.data.documentId); // ✅ This should now work correctly
-    } catch (error: any) {
-      console.error('Error adding item:', error.response?.data || error.message || error);
+      setNewItemId(response.data.data.documentId);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        console.error('Error adding item:', err.message);
+      } else if (typeof err === 'object' && err !== null && 'response' in err) {
+        const apiErr = err as { response?: { data?: unknown } };
+        console.error('Error adding item:', apiErr.response?.data);
+      } else {
+        console.error('Error adding item:', err);
+      }
     } finally {
       setLoading(false);
     }

@@ -36,6 +36,21 @@ export default function FoundMessageForm({ documentId }: FoundMessageFormProps) 
   const phoneValid = !senderPhone || PHONE_REGEX.test(senderPhone); // optional, but if present must match regex
   const messageValid = message.trim().length > 0 && message.length <= MAX_LEN;
 
+  // helper (top of file, outside component)
+function getErrorMessage(err: unknown) {
+  if (err instanceof Error) return err.message;
+  if (typeof err === 'string') return err;
+  try {
+    // handle fetch/axios-like error shapes
+    if (err && typeof err === 'object') {
+      const maybe: any = err;
+      if (maybe?.response?.data?.error?.message) return String(maybe.response.data.error.message);
+      if (maybe?.message) return String(maybe.message);
+    }
+  } catch {}
+  return 'Failed to send message. Please try again.';
+}
+
   const canSubmit =
     status !== 'loading' && emailValid && phoneValid && messageValid && !website;
 
@@ -55,9 +70,9 @@ export default function FoundMessageForm({ documentId }: FoundMessageFormProps) 
         sender_phone: senderPhone.trim() || undefined,           // NEW
       });
       setStatus('success');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err?.message || 'Failed to send message. Please try again.');
+      setError(getErrorMessage(err));
       setStatus('error');
     }
   };

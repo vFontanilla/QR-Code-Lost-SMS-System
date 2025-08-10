@@ -14,7 +14,7 @@ interface User {
 
 export default function DashboardPage() {
   useAuthRedirect(); // 👈 protect the page
-  const router = useRouter();
+  // const router = useRouter();
 
   const [user, setUser] = useState<User | null>(null);
   const [items, setItems] = useState<any[]>([]);
