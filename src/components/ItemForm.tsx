@@ -73,7 +73,13 @@ export default function ItemForm() {
     }
   };
 
-  const qrUrl = newItemId ? `/item/${newItemId}` : '';
+  const base =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  (typeof window !== 'undefined' ? window.location.origin : '');
+
+  const qrUrl = newItemId
+  ? new URL(`/item/${newItemId}`, base).toString()
+  : '';
 
   const downloadQRCode = () => {
     const canvas = qrRef.current?.querySelector('canvas');
