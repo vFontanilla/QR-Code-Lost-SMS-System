@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { fetchItems } from '@/lib/api';
 import Link from 'next/link';
 import ItemList from '@/components/Itemlist';
-// import { useRouter } from 'next/navigation';
 import useAuthRedirect from '@/hooks/useAuthRedirect'; // 👈 auth protection
 
 interface User {
@@ -14,10 +13,9 @@ interface User {
 
 export default function DashboardPage() {
   useAuthRedirect(); // 👈 protect the page
-  // const router = useRouter();
 
   const [user, setUser] = useState<User | null>(null);
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,7 +28,7 @@ export default function DashboardPage() {
         setUser(userData);
 
         const itemRes = await fetchItems();
-        console.log(itemRes)
+        console.log(itemRes);
         setItems(itemRes.data.data);
       } catch (err) {
         console.error(err);
@@ -72,7 +70,7 @@ export default function DashboardPage() {
         + Add New Item
       </Link>
 
-      <ItemList items={items} />
+      <ItemList items={items as any[]} />
     </div>
   );
 }

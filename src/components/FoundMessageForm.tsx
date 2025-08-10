@@ -23,11 +23,30 @@ const MAX_LEN = 500;
 // very light client-side check: allow +, digits, spaces, (), -
 const PHONE_REGEX = /^[+\d\s()\-]{7,20}$/;
 
+// helper (top of file, outside component)
+type ErrorLike = {
+  response?: { data?: { error?: { message?: unknown } } };
+  message?: unknown;
+};
+
+function getErrorMessage(err: unknown) {
+  if (err instanceof Error) return err.message;
+  if (typeof err === 'string') return err;
+
+  if (err && typeof err === 'object') {
+    const maybe = err as ErrorLike;
+    const msg = maybe.response?.data?.error?.message ?? maybe.message;
+    if (msg) return String(msg);
+  }
+
+  return 'Failed to send message. Please try again.';
+}
+
 export default function FoundMessageForm({ documentId }: FoundMessageFormProps) {
   const [message, setMessage] = useState('');
   const [senderName, setSenderName] = useState('');
   const [senderEmail, setSenderEmail] = useState('');
-  const [senderPhone, setSenderPhone] = useState('');            // NEW
+  const [senderPhone, setSenderPhone] = useState(''); // NEW
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [error, setError] = useState<string | null>(null);
   const [website, setWebsite] = useState(''); // honeypot
@@ -35,21 +54,6 @@ export default function FoundMessageForm({ documentId }: FoundMessageFormProps) 
   const emailValid = !senderEmail || /^\S+@\S+\.\S+$/.test(senderEmail);
   const phoneValid = !senderPhone || PHONE_REGEX.test(senderPhone); // optional, but if present must match regex
   const messageValid = message.trim().length > 0 && message.length <= MAX_LEN;
-
-  // helper (top of file, outside component)
-function getErrorMessage(err: unknown) {
-  if (err instanceof Error) return err.message;
-  if (typeof err === 'string') return err;
-  try {
-    // handle fetch/axios-like error shapes
-    if (err && typeof err === 'object') {
-      const maybe: any = err;
-      if (maybe?.response?.data?.error?.message) return String(maybe.response.data.error.message);
-      if (maybe?.message) return String(maybe.message);
-    }
-  } catch {}
-  return 'Failed to send message. Please try again.';
-}
 
   const canSubmit =
     status !== 'loading' && emailValid && phoneValid && messageValid && !website;
@@ -67,7 +71,7 @@ function getErrorMessage(err: unknown) {
         message: message.trim(),
         sender_name: senderName.trim() || undefined,
         sender_email: senderEmail.trim() || undefined,
-        sender_phone: senderPhone.trim() || undefined,           // NEW
+        sender_phone: senderPhone.trim() || undefined, // NEW
       });
       setStatus('success');
     } catch (err: unknown) {
