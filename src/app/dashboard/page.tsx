@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { fetchItems } from '@/lib/api';
 import Link from 'next/link';
 import ItemList from '@/components/Itemlist';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation';
 import useAuthRedirect from '@/hooks/useAuthRedirect'; // 👈 auth protection
 
 interface User {
