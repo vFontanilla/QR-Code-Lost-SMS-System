@@ -73,7 +73,7 @@ export default function ItemForm() {
     }
   };
 
-  const qrUrl = newItemId ? `${process.env.NEXT_PUBLIC_FRONTEND_URL}/item/${newItemId}` : '';
+  const qrUrl = newItemId ? `/item/${newItemId}` : '';
 
   const downloadQRCode = () => {
     const canvas = qrRef.current?.querySelector('canvas');
