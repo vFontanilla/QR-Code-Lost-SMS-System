@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Link } from 'lucide-react';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -98,9 +99,9 @@ export default function RegisterPage() {
 
         <p className="mt-4 text-sm text-center">
           Already have an account?{' '}
-          <a href="/" className="text-blue-600 hover:underline">
+          <Link href="/" className="text-blue-600 hover:underline">
             Log In
-          </a>
+          </Link>
         </p>
       </form>
     </div>
